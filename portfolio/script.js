@@ -14,8 +14,7 @@ $$('.theme button').forEach(b=>b.onclick=()=>{try{localStorage.setItem('theme',b
 mq.addEventListener('change',()=>applyTheme());applyTheme();
 
 /* ---------- Opening animation ---------- */
-const cnt=$('#count');let n=0;
-const tick=setInterval(()=>{n+=Math.ceil(Math.random()*9);if(n>=100){n=100;clearInterval(tick);setTimeout(()=>{body.classList.remove('loading');body.classList.add('go')},300)}cnt.textContent=String(n).padStart(2,'0')},70);
+setTimeout(()=>{body.classList.remove('loading');body.classList.add('go')},700);
 
 /* ---------- Nav ---------- */
 $('#burger').onclick=()=>$('#links').classList.toggle('open');
@@ -50,6 +49,8 @@ const T={
 };
 const modes=$('#modes'),lenses=$('#lenses'),focus=$('#focus');
 const zoomButton=$('#zoom');let currentZoom=1;
+const prevTool=$('#prevTool'),nextTool=$('#nextTool'),preview=$('.vf');
+let activeCategory='Media Editing',activeIndex=0;
 function setZoom(value){
   currentZoom=Math.min(3,Math.max(1,value));
   focus.style.setProperty('--tool-zoom',currentZoom);
@@ -62,13 +63,33 @@ const toolLogo=$('#fImg');
 function zoomLogo(){setZoom(currentZoom>=3?1:currentZoom+.5)}
 toolLogo.onclick=zoomLogo;
 toolLogo.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zoomLogo()}};
-function show(cat,i){
+function updateNeighbors(cat,i){
+  const tools=T[cat],prevIndex=(i-1+tools.length)%tools.length,nextIndex=(i+1)%tools.length;
+  const [prevName,prevImg]=tools[prevIndex],[nextName,nextImg]=tools[nextIndex];
+  $('img',prevTool).src=`img/${prevImg}.png`;$('img',prevTool).alt='';
+  $('img',nextTool).src=`img/${nextImg}.png`;$('img',nextTool).alt='';
+  $('span',prevTool).textContent=prevName;$('span',nextTool).textContent=nextName;
+  prevTool.title=`Previous: ${prevName}`;prevTool.setAttribute('aria-label',`Previous tool: ${prevName}`);
+  nextTool.title=`Next: ${nextName}`;nextTool.setAttribute('aria-label',`Next tool: ${nextName}`);
+  prevTool.disabled=tools.length<2;nextTool.disabled=tools.length<2;
+}
+function show(cat,i,direction=''){
+  activeCategory=cat;activeIndex=(i+T[cat].length)%T[cat].length;
+  i=activeIndex;
   const [name,img]=T[cat][i];
   $('#fImg').src=`img/${img}.png`;$('#fImg').alt=name;$('#fName').textContent=name;$('#fCat').textContent=cat;
-  focus.classList.remove('pop');void focus.offsetWidth;focus.classList.add('pop');
-  setZoom(Math.min(3,1+i*.5));
+  focus.classList.remove('pop','swipe-next','swipe-prev');
+  if(direction){void focus.offsetWidth;focus.classList.add(direction==='next'?'swipe-next':'swipe-prev')}
+  else {void focus.offsetWidth;focus.classList.add('pop')}
+  setZoom(1);
   $$('button',lenses).forEach((b,j)=>b.classList.toggle('on',j===i));
+  updateNeighbors(cat,i);
 }
+function moveTool(direction){show(activeCategory,activeIndex+(direction==='next'?1:-1),direction);const active=$$('button',lenses)[activeIndex];active?.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'})}
+prevTool.onclick=()=>moveTool('prev');nextTool.onclick=()=>moveTool('next');
+let swipeStart=null;
+preview.addEventListener('touchstart',e=>{const t=e.changedTouches[0];swipeStart={x:t.clientX,y:t.clientY}},{passive:true});
+preview.addEventListener('touchend',e=>{if(!swipeStart)return;const t=e.changedTouches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y;swipeStart=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.25)moveTool(dx<0?'next':'prev')},{passive:true});
 function mode(cat){
   $$('button',modes).forEach(b=>b.classList.toggle('on',b.textContent===cat));
   lenses.innerHTML='';
