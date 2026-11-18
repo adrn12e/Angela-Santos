@@ -12,7 +12,7 @@
 <body class="loading">
 
 <!-- Opening animation -->
-<div class="intro" id="intro"><span class="intro-line"></span><span class="intro-count" id="count">00</span></div>
+<div class="intro" id="intro"><span class="intro-line"></span></div>
 <div class="cursor" id="cursor"></div>
 
 <header class="nav">
@@ -68,10 +68,12 @@
 <section id="tools" class="sec">
   <h2 class="ghost">Tools</h2>
   <h2 class="title rv">Tools <em>&amp; Softwares</em></h2>
-  <p class="hint rv">Swipe the modes, tap a lens to zoom in.</p>
+  <p class="hint rv">Swipe the preview or choose a logo. Tap the zoom control to adjust magnification.</p>
   <div class="cam rv">
     <div class="vf"><div class="grid-lines"></div>
+      <button class="tool-peek prev" id="prevTool" type="button" aria-label="Previous tool"><img alt=""><span></span></button>
       <div class="focus" id="focus"><img id="fImg" alt="" role="button" tabindex="0" aria-label="Zoom tool logo"><h3 id="fName"></h3><span id="fCat"></span></div>
+      <button class="tool-peek next" id="nextTool" type="button" aria-label="Next tool"><img alt=""><span></span></button>
       <span class="rec">● LIVE</span><button class="zoom" id="zoom" type="button" title="Click to zoom in" aria-label="Zoom: 1 times">1×</button>
     </div>
     <div class="lenses" id="lenses"></div>
